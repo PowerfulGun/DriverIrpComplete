@@ -1,0 +1,86 @@
+;
+; DriverSyncRead.inf
+;
+
+[Version]
+Signature="$WINDOWS NT$"
+Class=Sample ; TODO: edit Class
+ClassGuid={78A1C341-4539-11d3-B88D-00C04FAD5171} ; TODO: edit ClassGuid
+Provider=%ManufacturerName%
+CatalogFile=DriverSyncRead.cat
+DriverVer= ; TODO: set DriverVer in stampinf property pages
+
+[DestinationDirs]
+DefaultDestDir = 12
+DriverSyncRead_Device_CoInstaller_CopyFiles = 11
+
+; ================= Class section =====================
+
+[ClassInstall32]
+Addreg=SampleClassReg
+
+[SampleClassReg]
+HKR,,,0,%ClassName%
+HKR,,Icon,,-5
+
+[SourceDisksNames]
+1 = %DiskName%,,,""
+
+[SourceDisksFiles]
+DriverSyncRead.sys  = 1,,
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+;*****************************************
+; Install Section
+;*****************************************
+
+[Manufacturer]
+%ManufacturerName%=Standard,NT$ARCH$
+
+[Standard.NT$ARCH$]
+%DriverSyncRead.DeviceDesc%=DriverSyncRead_Device, Root\DriverSyncRead ; TODO: edit hw-id
+
+[DriverSyncRead_Device.NT]
+CopyFiles=Drivers_Dir
+
+[Drivers_Dir]
+DriverSyncRead.sys
+
+;-------------- Service installation
+[DriverSyncRead_Device.NT.Services]
+AddService = DriverSyncRead,%SPSVCINST_ASSOCSERVICE%, DriverSyncRead_Service_Inst
+
+; -------------- DriverSyncRead driver install sections
+[DriverSyncRead_Service_Inst]
+DisplayName    = %DriverSyncRead.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\DriverSyncRead.sys
+
+;
+;--- DriverSyncRead_Device Coinstaller installation ------
+;
+
+[DriverSyncRead_Device.NT.CoInstallers]
+AddReg=DriverSyncRead_Device_CoInstaller_AddReg
+CopyFiles=DriverSyncRead_Device_CoInstaller_CopyFiles
+
+[DriverSyncRead_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[DriverSyncRead_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[DriverSyncRead_Device.NT.Wdf]
+KmdfService =  DriverSyncRead, DriverSyncRead_wdfsect
+[DriverSyncRead_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+SPSVCINST_ASSOCSERVICE= 0x00000002
+ManufacturerName="<Your manufacturer name>" ;TODO: Replace with your manufacturer name
+ClassName="Samples" ; TODO: edit ClassName
+DiskName = "DriverSyncRead Installation Disk"
+DriverSyncRead.DeviceDesc = "DriverSyncRead Device"
+DriverSyncRead.SVCDESC = "DriverSyncRead Service"
